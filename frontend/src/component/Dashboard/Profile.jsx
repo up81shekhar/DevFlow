@@ -16,6 +16,8 @@ import {
   Trash2,
   Paperclip,
   ArrowUp,
+  Menu, // Added for mobile menu trigger
+  X,    // Added for closing mobile menu
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,6 +33,9 @@ const Profile = () => {
   const [sessions, setSessions] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [searchQuery, setSearch] = useState("");
+  
+  // Mobile responsive sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const bottomRef = useRef(null);
 
@@ -66,6 +71,7 @@ const Profile = () => {
     setSessions((prev) => [{ id, title: "New Chat", messages: [] }, ...prev]);
     setActiveId(id);
     setInput("");
+    setIsSidebarOpen(false); // Close sidebar on mobile after choosing a chat
   };
 
   // ── getReply — YOUR ORIGINAL API CALL, untouched ─────────────────────────
@@ -117,22 +123,38 @@ const Profile = () => {
   );
 
   return (
-    <div className="flex h-screen w-full bg-[#0B0D16] text-[#9EA3B0] font-sans antialiased overflow-hidden text-[13px]">
+    <div className="flex h-screen w-full bg-[#0B0D16] text-[#9EA3B0] font-sans antialiased overflow-hidden text-[13px] relative">
+      
+      {/* Backdrop overlay for mobile sidebar */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* ================= LEFT SIDEBAR ================= */}
-      <aside className="w-[220px] bg-[#0F111A] flex flex-col border-r border-[#1C1F30] p-3 h-full shrink-0 gap-3 overflow-y-auto">
-        {/* Brand */}
-        {/* <div className="flex items-center gap-2 px-1 text-white font-semibold text-[13px]">
-          <div className="bg-gradient-to-tr from-purple-600 to-indigo-500 w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-white shrink-0">
-            <Cpu size={14} />
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-[240px] bg-[#0F111A] flex flex-col border-r border-[#1C1F30] p-3 h-full shrink-0 gap-3 overflow-y-auto transition-transform duration-300 ease-in-out
+        md:static md:translate-x-0 md:w-[220px]
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
+        {/* Brand & Mobile Close Button */}
+        <div className="flex items-center justify-between px-1 text-white font-semibold">
+          <div className="flex items-center gap-2 text-[23px]">
+            <img
+              src="./src/assets/Logo.png"
+              alt="logo"
+              className="h-8 w-8 object-contain"
+            />
+            <span>DevFlow AI</span>
           </div>
-          </div> */}
-        <div className="flex items-center gap-2 px-1 text-white font-semibold text-[23px]">
-          <img
-            src="./src/assets/Logo.png"
-            alt="logo"
-            className="h-8 w-8 object-contain"
-          />
-          <span>DevFlow AI</span>
+          <button 
+            className="md:hidden p-1 text-gray-400 hover:text-white"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* New Chat */}
@@ -185,7 +207,7 @@ const Profile = () => {
           ))}
         </nav>
 
-        {/* Recent Chats — now dynamic */}
+        {/* Recent Chats */}
         <nav className="flex flex-col gap-0.5 flex-1 overflow-y-auto">
           <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 px-2 mb-1">
             Recent Chats
@@ -195,12 +217,13 @@ const Profile = () => {
             <p className="text-[11px] text-gray-600 px-2 py-1">No chats yet.</p>
           )}
 
-          {filteredSessions.map((s, i) => (
+          {filteredSessions.map((s) => (
             <div
               key={s.id}
               onClick={() => {
                 setActiveId(s.id);
                 setInput("");
+                setIsSidebarOpen(false); // Close mobile panel upon selecting item
               }}
               className={`group flex items-center justify-between truncate text-[11.5px] px-2 py-[6px] rounded-md cursor-pointer transition-colors ${
                 s.id === activeId
@@ -215,7 +238,7 @@ const Profile = () => {
                   setSessions((prev) => prev.filter((x) => x.id !== s.id));
                   if (activeId === s.id) setActiveId(null);
                 }}
-                className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-400 transition-all ml-1 shrink-0"
+                className="opacity-100 md:opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-400 transition-all ml-1 shrink-0"
               >
                 <Trash2 size={11} />
               </button>
@@ -231,27 +254,28 @@ const Profile = () => {
             </a>
           )}
         </nav>
-
-        {/* Upgrade */}
-        {/* <div className="bg-[#141624] p-3 rounded-xl border border-[#272B44] mt-auto shrink-0">
-          <div className="flex items-center gap-1.5 mb-1.5 text-white font-semibold text-[12px]">
-            <div className="bg-purple-600 p-[3px] rounded"><Sparkles size={12} /></div>
-            Upgrade to Pro
-          </div>
-          <p className="text-[11px] text-gray-400 leading-relaxed mb-2.5">Unlock unlimited AI discussions and more features.</p>
-          <button className="w-full bg-[#5233E7] hover:bg-[#4326CE] text-white text-[11px] font-medium py-1.5 rounded-lg transition-colors">Upgrade now</button>
-        </div> */}
       </aside>
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="flex-1 flex flex-col h-full bg-[#0D0F1A] relative overflow-hidden">
+      <main className="flex-1 flex flex-col h-full bg-[#0D0F1A] relative overflow-hidden w-full">
         {/* Topbar */}
-        <header className="h-[52px] border-b border-[#1C1F30] flex items-center justify-between px-5 bg-[#0D0F1A]/80 backdrop-blur-md z-10 shrink-0">
-          <button className="flex items-center gap-1.5 text-white font-medium text-[13px] hover:bg-[#161926] py-1 px-2.5 rounded-lg transition-colors">
-            {currentSession ? currentSession.title : "DevFlow AI"}
-            <ChevronDown size={13} className="text-gray-400" />
-          </button>
-          <div className="flex items-center gap-3.5">
+        <header className="h-[52px] border-b border-[#1C1F30] flex items-center justify-between px-4 md:px-5 bg-[#0D0F1A]/80 backdrop-blur-md z-10 shrink-0 gap-2">
+          <div className="flex items-center gap-2 overflow-hidden">
+            {/* Hamburger button for mobile layouts */}
+            <button 
+              className="md:hidden p-1.5 text-gray-400 hover:text-white hover:bg-[#161926] rounded-lg transition-colors shrink-0"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={18} />
+            </button>
+            
+            <button className="flex items-center gap-1.5 text-white font-medium text-[13px] hover:bg-[#161926] py-1 px-2.5 rounded-lg transition-colors truncate">
+              <span className="truncate">{currentSession ? currentSession.title : "DevFlow AI"}</span>
+              <ChevronDown size={13} className="text-gray-400 shrink-0" />
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2.5 md:gap-3.5 shrink-0">
             {[UploadCloud, Share2, Trash2].map((Icon, i) => (
               <button
                 key={i}
@@ -267,7 +291,7 @@ const Profile = () => {
                       }
                     : undefined
                 }
-                className="text-gray-500 hover:text-white transition-colors"
+                className="text-gray-500 hover:text-white transition-colors p-1"
               >
                 <Icon size={15} />
               </button>
@@ -282,18 +306,13 @@ const Profile = () => {
           </div>
         </header>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 md:px-20 py-5 space-y-6 pb-28">
+        {/* Messages Layout */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-20 py-5 space-y-6 pb-32">
           {/* Empty / welcome state */}
           {messages.length === 0 && !loading && (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-center select-none">
-              {/* <div className="bg-purple-900/20 p-5 rounded-2xl border border-purple-500/20">
-                <Cpu size={34} className="text-purple-400" />
-              </div> */}
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-center select-none py-10">
               <p className="text-white text-[14px] font-semibold">
-                {currentSession
-                  ? "Start the conversation"
-                  : "Welcome to"}
+                {currentSession ? "Start the conversation" : "Welcome to"}
               </p>
               <div className="flex items-center gap-2 px-1 text-white font-semibold text-[23px]">
                 <img
@@ -306,7 +325,7 @@ const Profile = () => {
               <p className="text-[12px] text-gray-500 max-w-[260px]">
                 {currentSession
                   ? "Type a message below."
-                  : 'Click "New Chat" or just start typing.'}
+                  : 'Click the menu icon or "New Chat" to get started.'}
               </p>
             </div>
           )}
@@ -314,9 +333,8 @@ const Profile = () => {
           {/* Render all messages */}
           {messages.map((msg, idx) =>
             msg.role === "user" ? (
-              /* ── User bubble (original style) ── */
               <div key={idx} className="flex justify-end">
-                <div className="max-w-[72%] bg-[#3617D9] text-white rounded-[14px] rounded-tr-[3px] px-4 py-2.5">
+                <div className="max-w-[85%] md:max-w-[72%] bg-[#3617D9] text-white rounded-[14px] rounded-tr-[3px] px-4 py-2.5">
                   <p className="text-[12.5px] leading-relaxed whitespace-pre-wrap">
                     {msg.text}
                   </p>
@@ -326,13 +344,12 @@ const Profile = () => {
                 </div>
               </div>
             ) : (
-              /* ── AI bubble (original style) ── */
-              <div key={idx} className="flex items-start gap-2.5 max-w-[88%]">
+              <div key={idx} className="flex items-start gap-2.5 max-w-[95%] md:max-w-[88%]">
                 <div className="w-7 h-7 rounded-[8px] bg-purple-900/30 border border-purple-500/25 flex items-center justify-center shrink-0 text-purple-400 mt-0.5">
                   <Cpu size={13} />
                 </div>
-                <div className="space-y-3 w-full">
-                  <p className="text-[12.5px] text-[#C8CBD6] leading-relaxed whitespace-pre-wrap">
+                <div className="space-y-3 w-full overflow-hidden">
+                  <p className="text-[12.5px] text-[#C8CBD6] leading-relaxed whitespace-pre-wrap breakdown-words">
                     {msg.text}
                   </p>
                   <div className="flex items-center gap-2 text-gray-500 pt-0.5">
@@ -350,10 +367,10 @@ const Profile = () => {
                   </span>
                 </div>
               </div>
-            ),
+            )
           )}
 
-          {/* Loading spinner — original RingLoader */}
+          {/* Loading spinner */}
           {loading && (
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-[8px] bg-purple-900/30 border border-purple-500/25 flex items-center justify-center shrink-0 text-purple-400">
@@ -367,8 +384,8 @@ const Profile = () => {
           <div ref={bottomRef} />
         </div>
 
-        {/* Input bar — original layout */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0D0F1A] via-[#0D0F1A] to-transparent pt-8 pb-4 px-5 md:px-20">
+        {/* Input bar */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0D0F1A] via-[#0D0F1A] to-transparent pt-8 pb-4 px-4 sm:px-6 md:px-20 z-10">
           <div className="max-w-3xl mx-auto relative bg-[#131622] rounded-xl border border-[#22263B] shadow-xl focus-within:border-purple-600 transition-colors flex items-center px-2.5">
             <input
               type="text"
@@ -376,16 +393,16 @@ const Profile = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => (e.key === "Enter" ? getReply() : "")}
               placeholder="Ask DevFlow AI anything…"
-              className="flex-1 bg-transparent text-[12.5px] text-white py-3 px-2 focus:outline-none placeholder-gray-500"
+              className="flex-1 bg-transparent text-[12.5px] text-white py-3 px-2 focus:outline-none placeholder-gray-500 w-full"
             />
             <button
               onClick={getReply}
-              className="bg-[#4826D9] hover:bg-[#3B20D3] text-white p-1.5 rounded-lg transition-colors ml-1"
+              className="bg-[#4826D9] hover:bg-[#3B20D3] text-white p-1.5 rounded-lg transition-colors ml-1 shrink-0"
             >
               <ArrowUp size={14} />
             </button>
           </div>
-          <p className="text-center text-[10px] text-gray-600 mt-1.5">
+          <p className="text-center text-[10px] text-gray-600 mt-1.5 px-4 line-clamp-1">
             AI can make mistakes. Consider checking important information.
           </p>
         </div>
