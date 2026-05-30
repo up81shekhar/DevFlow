@@ -91,7 +91,7 @@ const Navbar = () => {
             </a>
 
             <a
-              href="/profile"
+              href="/dashboard"
               className="w-full text-center px-5 py-3 rounded-xl bg-gradient-to-r from-violet-500 via-purple-500 to-blue-500 text-white font-semibold shadow-lg shadow-violet-500/30"
             >
               AI Workspace

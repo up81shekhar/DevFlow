@@ -45,7 +45,6 @@ const Signup = () => {
               Email Address
             </label>
             <input
-              type="bg-[#050816]"
               type="email"
               name="email"
               placeholder="you@example.com"
