@@ -8,10 +8,18 @@ import chatRoute from "./routes/Chat.js";
 
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://dev-flow-ruby.vercel.app"
+    ],
+    credentials: true,
+  })
+);
 
 app.use('/api', chatRoute);
  
@@ -24,6 +32,10 @@ const connectToDb= async() => {
         console.log('Failed to connect DB');
     }
 }
+
+app.get("/", (req, res) => {
+  res.send("DevFlow Backend Running");
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
