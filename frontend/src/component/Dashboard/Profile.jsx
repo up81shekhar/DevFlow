@@ -96,7 +96,7 @@ const Profile = () => {
       body: JSON.stringify({ message: text, threadId: sid }),
     };
     try {
-      const response = await fetch("http://localhost:8080/api/chat", options);
+      const response = await fetch("https://devflow-production-ddad.up.railway.app/api/chat", options);
       const res = await response.json();
       console.log(res);
       addMessage(sid, { role: "ai", text: res.reply, time: nowTime() });
